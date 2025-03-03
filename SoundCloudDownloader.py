@@ -1,5 +1,5 @@
 import os
-import subprocess
+import yt_dlp
 import tkinter as tk
 from tkinter import messagebox
 
@@ -9,22 +9,25 @@ def download_soundcloud_song():
         messagebox.showerror("Fehler", "Bitte eine SoundCloud-URL eingeben!")
         return
     
-    output_dir = "downloads"
+    output_dir = os.path.abspath("downloads"
     os.makedirs(output_dir, exist_ok=True)
-    output_file = os.path.join(output_dir, "%(title)s.%(ext)s")  # Originalformat speichern
+                                 
+    output_file = os.path.join(output_dir, "%(title)s.%(ext)s")
 
     status_label.config(text=f"Lade herunter: {url}")
     
     try:
-        # Kein --audio-format mp3 → speichert das Originalformat (m4a, opus, etc.)
-        subprocess.run(["yt-dlp", "-o", output_file, url], check=True)
+        ydl_opts = {'outtmpl': output_file}
+        with yt_dlp.YouTubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
         status_label.config(text=f"Download abgeschlossen! Datei in '{output_dir}' gespeichert.")
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         status_label.config(text="Fehler beim Download.")
-        messagebox.showerror("Fehler", f"Download fehlgeschlagen: {e}")
+        messagebox.showerror("Fehler", f"Download fehlgeschlagen:\n{str(e)}")
 
 def clear_input():
-    url_entry.delete(0, tk.END)  # Löscht die Eingabe
+    url_entry.delete(0, tk.END) #Löscht die Eingabe
 
 # GUI erstellen
 root = tk.Tk()
